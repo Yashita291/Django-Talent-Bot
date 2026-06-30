@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Sign up{% endblock %}
+{% block content %}
+<div class="panel" style="max-width:360px; margin:40px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+  <h2 style="margin-top:0;">Create Recruiter Account</h2>
+  
+  {% if form.errors %}
+    <div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px;">
+      <strong>Please check your details:</strong>
+      {% for field, errors in form.errors.items %}
+        {% for error in errors %}
+          <br>• {{ field|capfirst }}: {{ error }}
+        {% endfor %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    
+    <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+      <label style="margin-bottom: 4px; font-weight: bold;">Username</label>
+      <input type="text" name="username" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;" required placeholder="Choose a username" value="{{ form.username.value|default:'' }}">
+    </div>
+
+    <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+      <label style="margin-bottom: 4px; font-weight: bold;">Corporate Email</label>
+      <input type="email" name="email" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;" required placeholder="recruiter@company.com" value="{{ form.email.value|default:'' }}">
+    </div>
+    
+    <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+      <label style="margin-bottom: 4px; font-weight: bold;">Password</label>
+      <input type="password" name="password" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;" required placeholder="Create secure password">
+    </div>
+
+    <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+      <label style="margin-bottom: 4px; font-weight: bold;">Confirm Password</label>
+      <input type="password" name="password_confirm" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;" required placeholder="Repeat your secure password">
+    </div>
+
+    <div style="margin-top:16px;">
+      <button type="submit" style="width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">Sign up</button>
+    </div>
+  </form>
+  
+  <div style="margin-top: 20px; text-align: center; border-top: 1px solid #eee; padding-top: 15px;">
+    <p style="margin: 0; font-size: 14px; color: #666;">
+      Already have an account? <a href="{% url 'login' %}" style="color: #007bff; text-decoration: none; font-weight: bold;">Sign In Here</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

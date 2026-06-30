@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <h2 style="margin-top:0; font-size:15px;">Audit log
+    <span class="muted">— {% if is_admin %}all users{% else %}your searches{% endif %}</span></h2>
+  <table>
+    <thead><tr><th>When (UTC)</th><th>User</th><th>Job title</th><th>Location</th>
+      <th>Provider</th><th>Results</th><th></th></tr></thead>
+    <tbody>
+    {% for run in runs %}
+      <tr>
+        <td>{{ run.created_at|date:"Y-m-d H:i" }}</td>
+        <td>{{ run.user.username|default:"—" }}</td>
+        <td>{{ run.job_title }}</td>
+        <td>{{ run.location }}</td>
+        <td>{{ run.provider }}</td>
+        <td>{{ run.result_count }}</td>
+        <td><a class="rowlink" href="{% url 'mapping:run_detail' run.id %}">view</a></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7" class="muted">No searches yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

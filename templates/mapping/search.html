@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="grid">
+  <div class="panel">
+    <h2 style="margin-top:0; font-size:15px;">Hiring Brief</h2>
+    
+    {% if form.errors %}
+      <div style="background-color: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 13px;">
+        <strong>Validation Error:</strong> Please fill out all required fields.
+      </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      
+      <label>Job Title / Designation</label>
+      <input type="text" name="job_title" value="{{ form.job_title.value|default:'' }}" required style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;">
+      
+      <label>Industry / Sector</label>
+      <input type="text" name="industry" value="{{ form.industry.value|default:'' }}" required style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;">
+      
+      <label>Location</label>
+      <input type="text" name="location" value="{{ form.location.value|default:'' }}" required style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;">
+      
+      <label>Min Years of Experience</label>
+      <input type="number" name="min_years_experience" value="{{ form.min_years_experience.value|default:'0' }}" required style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;">
+      
+      <label>Key Skills (comma-separated)</label>
+      <input type="text" name="skills" value="{{ form.skills.value|default:'' }}" required style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;">
+      
+      <details style="margin-top:12px;">
+        <summary class="muted" style="cursor:pointer; margin-bottom:10px;">Optional filters</summary>
+        
+        <label>Target Companies</label>
+        <input type="text" name="target_companies" value="{{ form.target_companies.value|default:'' }}" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;">
+        
+        <label>Exclude Companies</label>
+        <input type="text" name="exclude_companies" value="{{ form.exclude_companies.value|default:'' }}" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;">
+        
+        <label>Keywords</label>
+        <input type="text" name="keywords" value="{{ form.keywords.value|default:'' }}" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;">
+        
+        <label>Exclusion Keywords</label>
+        <input type="text" name="exclusion_keywords" value="{{ form.exclusion_keywords.value|default:'' }}" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;">
+        
+        <label>Threshold</label>
+        <input type="number" step="0.01" name="threshold" value="{{ form.threshold.value|default:'0.5' }}" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;">
+        
+        <label>Top K</label>
+        <input type="number" name="top_k" value="{{ form.top_k.value|default:'10' }}" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;">
+      </details>
+      
+      <div style="margin-top:16px;">
+        <button type="submit" style="width:100%; padding:10px; background-color:#007bff; color:white; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Search</button>
+      </div>
+    </form>
+  </div>
+
+  <div>
+    {% if outcome %}
+      <div class="metrics">
+        <div class="metric"><div class="v">{{ outcome.run.result_count }}</div><div class="k">Matches</div></div>
+        <div class="metric"><div class="v">{{ outcome.filtered_out }}</div><div class="k">Filtered as irrelevant</div></div>
+        <div class="metric"><div class="v">{{ outcome.run.provider }}</div><div class="k">Provider</div></div>
+        <div class="metric"><div class="v"><a class="rowlink" href="{% url 'mapping:run_csv' outcome.run.id %}">CSV</a></div><div class="k">Export</div></div>
+      </div>
+
+      {% if results %}
+      <div class="panel">
+        <table>
+          <thead><tr><th>#</th><th>Score</th><th>Name</th><th>Designation</th>
+            <th>Company</th><th>Location</th><th>Exp</th><th>Matched skills</th></tr></thead>
+          <tbody>
+          {% for r in results %}
+            <tr>
+              <td>{{ r.rank }}</td>
+              <td class="score">{{ r.score|floatformat:1 }}</td>
+              <td>{{ r.name }}{% if r.linkedin_url %} · <a class="rowlink" href="{{ r.linkedin_url }}" target="_blank">in</a>{% endif %}</td>
+              <td>{{ r.current_designation }}</td>
+              <td>{{ r.current_company }}</td>
+              <td>{{ r.location }}</td>
+              <td>{{ r.years_experience }}</td>
+              <td class="muted">{{ r.matched_skills|join:", " }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="font-size:14px;">Why these ranked where they did</h3>
+      {% for r in results %}
+        <div class="panel" style="margin-bottom:10px;">
+          <strong>#{{ r.rank }} {{ r.name }}</strong> <span class="score">{{ r.score|floatformat:1 }}/100</span>
+          <div style="margin-top:8px;">
+            {% for k, v in r.breakdown.items %}
+              <div style="display:flex; align-items:center; gap:10px; margin:3px 0;">
+                <span class="muted" style="width:90px;">{{ k }}</span>
+                <span class="bar" style="flex:1;"><span style="width:{{ v }}%;"></span></span>
+                <span style="width:42px; text-align:right;">{{ v }}</span>
+              </div>
+            {% endfor %}
+          </div>
+          {% if r.notes %}<div class="muted" style="margin-top:6px;">{{ r.notes }}</div>{% endif %}
+        </div>
+      {% endfor %}
+
+      {% else %}
+        <div class="panel muted">No candidates cleared the relevance threshold. Loosen skills or lower the threshold.</div>
+      {% endif %}
+    {% else %}
+      <div class="panel muted">Fill the brief and click <strong>Search</strong>. Running on the
+        <strong>mock</strong> provider — swap in a licensed search/people-data API for production.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

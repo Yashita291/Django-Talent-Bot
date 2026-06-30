@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="panel">
+  <h2 style="margin-top:0; font-size:15px;">Run #{{ run.id }} — {{ run.job_title }}</h2>
+  <p class="muted">{{ run.created_at|date:"Y-m-d H:i" }} UTC · {{ run.user.username|default:"—" }}
+     · {{ run.provider }} · {{ run.result_count }} results
+     · <a class="rowlink" href="{% url 'mapping:run_csv' run.id %}">CSV</a></p>
+  <table>
+    <thead><tr><th>#</th><th>Score</th><th>Name</th><th>Designation</th><th>Company</th>
+      <th>Location</th><th>Exp</th><th>Source</th></tr></thead>
+    <tbody>
+    {% for r in results %}
+      <tr><td>{{ r.rank }}</td><td class="score">{{ r.score|floatformat:1 }}</td>
+        <td>{{ r.name }}</td><td>{{ r.current_designation }}</td><td>{{ r.current_company }}</td>
+        <td>{{ r.location }}</td><td>{{ r.years_experience }}</td>
+        <td>{% if r.source_url %}<a class="rowlink" href="{{ r.source_url }}" target="_blank">link</a>{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
